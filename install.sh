@@ -1,25 +1,26 @@
 #!/bin/bash
 
 MYIP=$(curl -s http://checkip.amazonaws.com)
+sudo setfacl -m user:ubuntu:rw /var/run/docker.sock
 
-INTEGRATION={{integration}}/kong
+# INTEGRATION={{integration}}/kong
 
 function install-kong-gw {
 
 
-    source $INTEGRATION/kong-setup/variables.sh
+#     source $INTEGRATION/kong-setup/variables.sh
 
-    # Make sure there are no containers running
-    docker stop $(docker ps -a -q) || :
-    docker rm $(docker ps -a -q) || :
+#     # Make sure there are no containers running
+#     docker stop $(docker ps -a -q) || :
+#     docker rm $(docker ps -a -q) || :
 
 
-  pushd $INTEGRATION/kong-setup/
-    # Create the directory for storing certificates, configuration and logs
+#   pushd $INTEGRATION/kong-setup/
+#     # Create the directory for storing certificates, configuration and logs
 
-# Following for setup on AVL
-# Obtain docker certificates and clone course repo
-./setup-docker.sh
+# # Following for setup on AVL
+# # Obtain docker certificates and clone course repo
+# ./setup-docker.sh
 git clone https://github.com/Kong/kong-course-gateway-ops-for-kubernetes.git
 cd kong-course-gateway-ops-for-kubernetes
 
@@ -156,81 +157,81 @@ helm install -f ./base/dp-values.yaml kong-dp kong/kong -n kong-dp \
 
 
 
-    rm -rf /srv/shared/kong
-    mkdir -p /srv/shared/kong
+#     rm -rf /srv/shared/kong
+#     mkdir -p /srv/shared/kong
 
-    # Copy files required for Kong to startup and assign permissons
-    cp -R ssl-certs /srv/shared/kong
-    cp -R keycloak /srv/shared/kong
+#     # Copy files required for Kong to startup and assign permissons
+#     cp -R ssl-certs /srv/shared/kong
+#     cp -R keycloak /srv/shared/kong
 
-    # Create Log files
-    mkdir -p /srv/shared/kong/logs
-    touch $(grep '/srv/shared/kong/logs' "${INTEGRATION}/kong-setup/docker/docker-compose-variant-b.yml" | awk '{print $2}' | xargs)
+#     # Create Log files
+#     mkdir -p /srv/shared/kong/logs
+#     touch $(grep '/srv/shared/kong/logs' "${INTEGRATION}/kong-setup/docker/docker-compose-variant-b.yml" | awk '{print $2}' | xargs)
     
     
-    # Change permissions for Kong directory
-    chmod -R a+rw /srv/shared/kong/*
+#     # Change permissions for Kong directory
+#     chmod -R a+rw /srv/shared/kong/*
 
-    # Create a hidden directory for solution and grading
-    rm -rf /tmp/.shared
-    mkdir -p /tmp/.shared
+#     # Create a hidden directory for solution and grading
+#     rm -rf /tmp/.shared
+#     mkdir -p /tmp/.shared
 
 
-    # These files are copied to test the grading and solution scripts manually within the Trueability environment
+#     # These files are copied to test the grading and solution scripts manually within the Trueability environment
 
-    cp -R $INTEGRATION/kong-setup/startup/deck/variant_b /tmp/.shared/deck
-    cp -R $INTEGRATION/assessments/kong-gateway-associate/templates/solution /tmp/.shared/s
-    cp -R $INTEGRATION/assessments/kong-gateway-associate/templates/grading /tmp/.shared/g
+#     cp -R $INTEGRATION/kong-setup/startup/deck/variant_b /tmp/.shared/deck
+#     cp -R $INTEGRATION/assessments/kong-gateway-associate/templates/solution /tmp/.shared/s
+#     cp -R $INTEGRATION/assessments/kong-gateway-associate/templates/grading /tmp/.shared/g
     
-    # Scripts to Instantiate initial variables for 02-kga-pbtb
-    mkdir -p /tmp/.shared/startup
-    cp -R $INTEGRATION/kong-setup/startup/scripts/variant_b/02-kga-pbtb_initial_ids.sh /tmp/.shared/startup
-    cp -R $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml /tmp/.shared/startup
+#     # Scripts to Instantiate initial variables for 02-kga-pbtb
+#     mkdir -p /tmp/.shared/startup
+#     cp -R $INTEGRATION/kong-setup/startup/scripts/variant_b/02-kga-pbtb_initial_ids.sh /tmp/.shared/startup
+#     cp -R $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml /tmp/.shared/startup
 
-    # If the hostname is something other than localhost, we need to add an entry into /etc/hosts
-    if "{{konggwname}}" != "localhost"; then
-        sed -i '/{{konggwname}}/d' /etc/hosts
-        echo "{{node1.private_ipv4_address}}    {{konggwname}}" >>/etc/hosts
-    fi
+#     # If the hostname is something other than localhost, we need to add an entry into /etc/hosts
+#     if "{{konggwname}}" != "localhost"; then
+#         sed -i '/{{konggwname}}/d' /etc/hosts
+#         echo "{{node1.private_ipv4_address}}    {{konggwname}}" >>/etc/hosts
+#     fi
     
-    # Keycloak host name must be resolved to localhost
+#     # Keycloak host name must be resolved to localhost
 
-    echo "127.0.0.1 keycloak" >> /etc/hosts
+#     echo "127.0.0.1 keycloak" >> /etc/hosts
 
-    # Start Docker Containers
+#     # Start Docker Containers
 
-    docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d db kong-cp kong-migrations kong-dp keycloak httpbin.local mockbin.local
-    http POST "{{konggwname}}:8001/licenses" payload=@$INTEGRATION/kong-setup/license/license.json Kong-Admin-Token:mytoken --ignore-stdin
-    docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml stop kong-cp
-    docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml rm -f kong-cp
-    docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d kong-cp
-    docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d deck
+#     docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d db kong-cp kong-migrations kong-dp keycloak httpbin.local mockbin.local
+#     http POST "{{konggwname}}:8001/licenses" payload=@$INTEGRATION/kong-setup/license/license.json Kong-Admin-Token:mytoken --ignore-stdin
+#     docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml stop kong-cp
+#     docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml rm -f kong-cp
+#     docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d kong-cp
+#     docker-compose -f $INTEGRATION/kong-setup/docker/docker-compose-variant-b.yml up -d deck
 
-    popd
+#     popd
 
-    # Load up config then grab IDs for question 02-kga-pbtb
+#     # Load up config then grab IDs for question 02-kga-pbtb
 
-    sleep 5
+#     sleep 5
     
-    # Execute script required for grading for PBTB Question 2
-    /tmp/.shared/startup/02-kga-pbtb_initial_ids.sh
+#     # Execute script required for grading for PBTB Question 2
+#     /tmp/.shared/startup/02-kga-pbtb_initial_ids.sh
     
 }
 
 install-kong-gw
 
-# Install Pre-requisite applications
-apt install -y npm
-npm install --global -y jsonwebtokencli
+# # Install Pre-requisite applications
+# apt install -y npm
+# npm install --global -y jsonwebtokencli
 
-# We don't want users to access the solution and grading scripts
-chmod 700 /usr/local/bin/deck
-chmod -R 700 /tmp/.shared/*
-chmod a+rx $INTEGRATION/assessments/kong-gateway-associate/templates/solution/variant_b/04-KGA-PBTB-solution.sh
-chmod a+rx /tmp/.shared/startup/ids.sh
+# # We don't want users to access the solution and grading scripts
+# chmod 700 /usr/local/bin/deck
+# chmod -R 700 /tmp/.shared/*
+# chmod a+rx $INTEGRATION/assessments/kong-gateway-associate/templates/solution/variant_b/04-KGA-PBTB-solution.sh
+# chmod a+rx /tmp/.shared/startup/ids.sh
 
 
 
-#Terminal autostart
-# ln -sf {{node.desktop.user.home_dir}}/Desktop/pantheon-terminal.desktop {{node.desktop.user.home_dir}}/.config/autostart/
-sed -i 's/^Exec=.*/& http:\/\/{{konggwname}}:8002/' {{node.desktop.user.home_dir}}/.config/autostart/Instructions.desktop
+# #Terminal autostart
+# # ln -sf {{node.desktop.user.home_dir}}/Desktop/pantheon-terminal.desktop {{node.desktop.user.home_dir}}/.config/autostart/
+# sed -i 's/^Exec=.*/& http:\/\/{{konggwname}}:8002/' {{node.desktop.user.home_dir}}/.config/autostart/Instructions.desktop
